@@ -17,4 +17,9 @@ defmodule ScenicJsxTest do
     assert %Scenic.Graph{} =
              ~z[<><text id=#{:temperature} text_align=#{:center} font_size=#{160}>Testing</text></>]
   end
+
+  test "test basic scenic graph with group" do
+    assert %Scenic.Graph{} =
+             ~z[<><text/><><text id=#{:temperature} text_align=#{:center} font_size=#{160}>Testing</text></></>]
+  end
 end

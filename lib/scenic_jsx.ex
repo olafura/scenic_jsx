@@ -136,7 +136,7 @@ defmodule ScenicJsx do
             {:->, [],
              [
                [{:graph, [], nil}],
-               to_pipe([{:graph, [], nil} | quoted_children])
+               to_pipe(quoted_children ++ [{:graph, [], nil}])
              ]}
           ]}
        ]}

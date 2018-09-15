@@ -1,0 +1,11 @@
+%{
+  "elixir_make": {:hex, :elixir_make, "0.4.2", "332c649d08c18bc1ecc73b1befc68c647136de4f340b548844efc796405743bf", [:mix], [], "hexpm"},
+  "mime": {:hex, :mime, "1.3.0", "5e8d45a39e95c650900d03f897fbf99ae04f60ab1daa4a34c7a20a5151b7a5fe", [:mix], [], "hexpm"},
+  "nimble_parsec": {:hex, :nimble_parsec, "0.4.0", "ee261bb53214943679422be70f1658fff573c5d0b0a1ecd0f18738944f818efe", [:mix], [], "hexpm"},
+  "phoenix_html": {:hex, :phoenix_html, "2.12.0", "1fb3c2e48b4b66d75564d8d63df6d53655469216d6b553e7e14ced2b46f97622", [:mix], [{:plug, "~> 1.5", [hex: :plug, repo: "hexpm", optional: false]}], "hexpm"},
+  "plug": {:hex, :plug, "1.6.2", "e06a7bd2bb6de5145da0dd950070110dce88045351224bd98e84edfdaaf5ffee", [:mix], [{:cowboy, "~> 1.0.1 or ~> 1.1 or ~> 2.4", [hex: :cowboy, repo: "hexpm", optional: true]}, {:mime, "~> 1.0", [hex: :mime, repo: "hexpm", optional: false]}], "hexpm"},
+  "scenic": {:hex, :scenic, "0.7.0", "fa93041fb63bc9e654fc70609d2af4ccad3cace07233ab47784ad96348137b1e", [:mix], [{:scenic_math, "~> 0.7.0", [hex: :scenic_math, repo: "hexpm", optional: false]}], "hexpm"},
+  "scenic_driver_glfw": {:hex, :scenic_driver_glfw, "0.7.0", "e9051384b136f05515b0a119f31db47d897f34ce243119b65ffad0e1eab005c5", [:make, :mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}, {:scenic, "~> 0.7.0", [hex: :scenic, repo: "hexpm", optional: false]}], "hexpm"},
+  "scenic_math": {:hex, :scenic_math, "0.7.1", "131ef7cf693293845efbbca911cea170060c9f0d6a677df5a439d5ca191d9e8e", [:make, :mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm"},
+  "sweet_xml": {:hex, :sweet_xml, "0.6.5", "dd9cde443212b505d1b5f9758feb2000e66a14d3c449f04c572f3048c66e6697", [:mix], [], "hexpm"},
+}

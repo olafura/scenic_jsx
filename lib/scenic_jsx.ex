@@ -5,12 +5,15 @@ defmodule ScenicJsx do
   require SweetXml
   import NimbleParsec
 
+  whitespace = ascii_string([?\s, ?\n], max: 100)
+
   tag =
     ascii_string([?a..?z], max: 1)
     |> concat(optional(ascii_string([?a..?z, ?_, ?0..?9], min: 1)))
+    |> ignore(whitespace)
     |> reduce({Enum, :join, [""]})
 
-  text = ascii_string([not: ?<], min: 1)
+  text = utf8_string([not: ?<], min: 1)
 
   sub =
     string("$")
@@ -20,7 +23,7 @@ defmodule ScenicJsx do
   quote_string = string("\"")
 
   quoted_attribute_text =
-    ignore(quote_string)
+    ignore(whitespace)
     |> repeat_until(
       choice([
         ~s(\") |> string() |> replace(?'),
@@ -33,7 +36,7 @@ defmodule ScenicJsx do
     |> label("quoted_attribute_text")
 
   attribute =
-    ignore(string(" "))
+    ignore(whitespace)
     |> concat(tag)
     |> ignore(string("="))
     |> choice([quoted_attribute_text, sub])
@@ -41,31 +44,48 @@ defmodule ScenicJsx do
     |> tag(:attribute)
 
   opening_tag =
-    ignore(string("<"))
+    ignore(whitespace)
+    |> ignore(string("<"))
     |> concat(tag)
     |> repeat_until(
       choice([attribute, ascii_char([?>]), string("/>")]),
       [ascii_char([?>]), string("/>")]
     )
     |> ignore(optional(string(">")))
+    |> ignore(whitespace)
     |> label("opening_tag")
     |> tag(:element)
 
   closing_tag =
-    ignore(string("</"))
+    ignore(whitespace)
+    |> ignore(string("</"))
     |> concat(tag)
     |> ignore(string(">"))
+    |> ignore(whitespace)
     |> label("closing_tag")
+
+  self_closing =
+    ignore(whitespace)
+    |> ignore(string("/>"))
+    |> ignore(whitespace)
 
   defparsec(
     :parse_xml,
     parsec(:xml)
   )
 
+  defcombinatorp(
+    :xml,
+    opening_tag
+    |> repeat_until(choice([parsec(:xml), text]), [string("</"), string("/>")])
+    |> choice([closing_tag, self_closing])
+    |> reduce({:fix_element, []})
+  )
+
   def parse_jsx(jsx) do
     {bin, context} = list_to_context(jsx)
 
-    with {:ok, results, _, _, _, _} <- parse_xml__0(bin, [], [], context, {1, 0}, 0) do
+    with {:ok, results, _, _, _, _} <- parse_xml__0(String.trim(bin), [], [], context, {1, 0}, 0) do
       {:ok, results}
     end
   end
@@ -88,14 +108,6 @@ defmodule ScenicJsx do
   def list_to_context(bin) when is_binary(bin) do
     {bin, %{}}
   end
-
-  defcombinatorp(
-    :xml,
-    opening_tag
-    |> repeat_until(choice([parsec(:xml), text]), [string("</"), string("/>")])
-    |> choice([closing_tag, ignore(string("/>"))])
-    |> reduce({:fix_element, []})
-  )
 
   defmacro sigil_z({:<<>>, _meta, pieces}, 'raw') do
     pieces

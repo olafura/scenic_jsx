@@ -114,6 +114,17 @@ defmodule ScenicJsx do
     |> Enum.map(&clean_litteral/1)
   end
 
+  defmacro sigil_z({:<<>>, _meta, pieces}, 'debug') do
+    {:ok, jsx} =
+      pieces
+      |> Enum.map(&clean_litteral/1)
+      |> parse_jsx()
+
+    ast = create_graph(jsx)
+    ast |> Macro.to_string() |> Code.format_string!() |> IO.puts()
+    ast
+  end
+
   defmacro sigil_z({:<<>>, _meta, pieces}, '') do
     {:ok, jsx} =
       pieces

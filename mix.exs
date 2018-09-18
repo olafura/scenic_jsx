@@ -26,8 +26,6 @@ defmodule ScenicJsx.MixProject do
       # deps to use AFTER it is released publicly
       {:scenic, "~> 0.7.0"},
       {:scenic_driver_glfw, "~> 0.7.0"},
-      {:phoenix_html, "~> 2.12"},
-      {:sweet_xml, "~> 0.6.5"},
       {:nimble_parsec, "~> 0.2"}
     ]
   end

@@ -2,7 +2,6 @@ defmodule ScenicJsx do
   @moduledoc """
   Documentation for ScenicJsx.
   """
-  require SweetXml
   import NimbleParsec
 
   whitespace = ascii_string([?\s, ?\n], max: 100)

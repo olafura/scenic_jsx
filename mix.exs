@@ -27,7 +27,7 @@ defmodule ScenicJsx.MixProject do
       {:scenic, "~> 0.7.0"},
       {:scenic_driver_glfw, "~> 0.7.0"},
       {:nimble_parsec, "~> 0.2"},
-      {:uuid, "~> 1.1"},
+      {:uuid, "~> 1.1"}
     ]
   end
 end

@@ -7,8 +7,9 @@ defmodule ScenicJsx do
   whitespace = ascii_string([?\s, ?\n], max: 100)
 
   tag =
-    ascii_string([?a..?z], max: 1)
-    |> concat(optional(ascii_string([?a..?z, ?_, ?0..?9], min: 1)))
+    ascii_char([?a..?z])
+    |> reduce({Kernel, :to_string, []})
+    |> concat(optional(ascii_string([?a..?z, ?_, ?0..?9, not: ?=], min: 1)))
     |> ignore(whitespace)
     |> reduce({Enum, :join, [""]})
 
@@ -55,13 +56,22 @@ defmodule ScenicJsx do
     |> label("opening_tag")
     |> tag(:element)
 
+  empty_tag =
+    ignore(whitespace)
+    |> ignore(string("<"))
+    |> ignore(string(">"))
+    |> ignore(whitespace)
+    |> label("empty_tag")
+    |> tag(:element)
+
   closing_tag =
     ignore(whitespace)
     |> ignore(string("</"))
-    |> concat(tag)
+    |> optional(tag)
     |> ignore(string(">"))
     |> ignore(whitespace)
     |> label("closing_tag")
+    |> tag(:closing_tag)
 
   self_closing =
     ignore(whitespace)
@@ -75,7 +85,7 @@ defmodule ScenicJsx do
 
   defcombinatorp(
     :xml,
-    opening_tag
+    choice([opening_tag, empty_tag])
     |> repeat_until(choice([parsec(:xml), text]), [string("</"), string("/>")])
     |> choice([closing_tag, self_closing])
     |> reduce({:fix_element, []})
@@ -160,11 +170,11 @@ defmodule ScenicJsx do
     Enum.reduce(elements, {main_graph, sub_graph}, &element_to_quoted/2)
   end
 
-  def element_to_quoted({:element, [""], children}, {[], []}) do
+  def element_to_quoted({:element, [], children}, {[], []}) do
     element_to_quoted(children, {[], []})
   end
 
-  def element_to_quoted({:element, [""], children}, {main_graph, sub_graph}) do
+  def element_to_quoted({:element, [], children}, {main_graph, sub_graph}) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
     new_graph =
@@ -220,11 +230,12 @@ defmodule ScenicJsx do
   def keyword_list_to_quoted_varible(list) when is_list(list) do
     list
     |> Keyword.keys()
-    |> Enum.map(&({&1, [], nil}))
+    |> Enum.map(&{&1, [], nil})
   end
 
   def sub_graph_id() do
     uuid = UUID.uuid4()
+
     "sub_graph_#{uuid}"
     |> String.replace("-", "_")
     |> String.to_atom()
@@ -256,7 +267,7 @@ defmodule ScenicJsx do
     tag = elem(element, 1) |> List.first()
     {closing_tag, new_nested} = List.pop_at(nested, -1)
 
-    if not (is_nil(closing_tag) or tag === "" or tag === closing_tag) do
+    if not (is_nil(closing_tag) or tag === "" or {:closing_tag, List.wrap(tag)} === closing_tag) do
       raise "Closing tag doesn't match opening tag"
     end
 

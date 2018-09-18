@@ -134,8 +134,26 @@ defmodule ScenicJsx do
   end
 
   def create_graph(jsx_ast) do
-    {quoted_main_graph, quote_sub_graph} = element_to_quoted(jsx_ast, {[], []})
-    new_quoted_main_graph = to_pipe(quoted_main_graph ++ [start_graph])
+    {quoted_main_graph, quoted_sub_graphs} = element_to_quoted(jsx_ast, {[], []})
+    new_quoted_sub_graph = new_sub_graphs(quoted_sub_graphs)
+    new_quoted_main_graph = new_graph_piped(quoted_main_graph)
+
+    quote do
+      unquote(new_quoted_sub_graph)
+      unquote(new_quoted_main_graph)
+    end
+  end
+
+  def new_sub_graphs(sub_graphs) do
+    sub_graphs
+    |> Enum.map(fn {atom, graph} ->
+      {:=, [], [{atom, [], nil}, new_graph_piped(List.wrap(graph))]}
+    end)
+    |> block()
+  end
+
+  def block(quoted) do
+    {:__block__, [], quoted}
   end
 
   def element_to_quoted(elements, {main_graph, sub_graph}) when is_list(elements) do
@@ -162,7 +180,7 @@ defmodule ScenicJsx do
           ]}
        ]}
 
-    {[new_graph | main_graph], sub_graph}
+    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
   end
 
   def element_to_quoted(
@@ -171,23 +189,45 @@ defmodule ScenicJsx do
       ) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
-    new_quoted_children =
+    {new_quoted_children, new_sub_graph} =
       case quoted_children do
         [] ->
-          ""
+          {"", []}
+
+        list when is_list(list) ->
+          new_sub_graph =
+            list
+            |> Enum.map(fn graph ->
+              {sub_graph_id(), graph}
+            end)
+
+          {keyword_list_to_quoted_varible(new_sub_graph), new_sub_graph}
 
         other ->
-          other
+          {other, []}
       end
 
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
     new_graph = {String.to_atom(function_name), [], [new_quoted_children, quoted_attributes]}
-    {[new_graph | main_graph], sub_graph}
+    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
   end
 
   # This is for text or other element
   def element_to_quoted(other, {[], []}) do
     {other, []}
+  end
+
+  def keyword_list_to_quoted_varible(list) when is_list(list) do
+    list
+    |> Keyword.keys()
+    |> Enum.map(&({&1, [], nil}))
+  end
+
+  def sub_graph_id() do
+    uuid = UUID.uuid4()
+    "sub_graph_#{uuid}"
+    |> String.replace("-", "_")
+    |> String.to_atom()
   end
 
   def attribute_to_quoted({:attribute, [attribute_name, attribute_value]}, acc) do
@@ -206,6 +246,10 @@ defmodule ScenicJsx do
 
   def to_pipe([head | tail]) do
     {:|>, [], [to_pipe(tail), head]}
+  end
+
+  defp new_graph_piped(quoted_graph) do
+    to_pipe(quoted_graph ++ [start_graph()])
   end
 
   defp fix_element([element | nested]) do

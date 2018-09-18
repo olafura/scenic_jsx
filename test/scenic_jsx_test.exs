@@ -33,4 +33,13 @@ defmodule ScenicJsxTest do
       </>
     )
   end
+
+  test "test basic scenic graph with elixir data" do
+    string = "Testing"
+    assert %Scenic.Graph{} = ~z(
+      <>
+        <text id=#{:temperature} text_align=#{:center} font_size=#{160}>#{string}</text>
+      </>
+    )
+  end
 end

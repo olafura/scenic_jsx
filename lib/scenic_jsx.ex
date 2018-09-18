@@ -86,7 +86,7 @@ defmodule ScenicJsx do
   defcombinatorp(
     :xml,
     choice([opening_tag, empty_tag])
-    |> repeat_until(choice([parsec(:xml), text]), [string("</"), string("/>")])
+    |> repeat_until(choice([parsec(:xml), sub, text]), [string("</"), string("/>")])
     |> choice([closing_tag, self_closing])
     |> reduce({:fix_element, []})
   )

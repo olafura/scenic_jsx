@@ -94,7 +94,7 @@ defmodule ScenicJsx do
   def parse_jsx(jsx) do
     {bin, context} = list_to_context(jsx)
 
-    with {:ok, results, _, _, _, _} <- parse_xml__0(String.trim(bin), [], [], context, {1, 0}, 0) do
+    with {:ok, results, _, _, _, _} <- parse_xml(String.trim(bin), context: context) do
       {:ok, results}
     end
   end

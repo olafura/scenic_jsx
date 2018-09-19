@@ -42,4 +42,10 @@ defmodule ScenicJsxTest do
       </>
     )
   end
+
+  test "test basic scenic graph module" do
+    assert %Scenic.Graph{} = ~z(
+      <TestComponent>Testing</TestComponent>
+    )debug
+  end
 end

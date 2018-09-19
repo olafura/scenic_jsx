@@ -7,9 +7,9 @@ defmodule ScenicJsx do
   whitespace = ascii_string([?\s, ?\n], max: 100)
 
   tag =
-    ascii_char([?a..?z])
+    ascii_char([?a..?z, ?A..?Z])
     |> reduce({Kernel, :to_string, []})
-    |> concat(optional(ascii_string([?a..?z, ?_, ?0..?9, not: ?=], min: 1)))
+    |> concat(optional(ascii_string([?a..?z, ?_, ?0..?9, ?A..?Z, not: ?=], min: 1)))
     |> ignore(whitespace)
     |> reduce({Enum, :join, [""]})
 
@@ -162,6 +162,10 @@ defmodule ScenicJsx do
     |> block()
   end
 
+  def block([]) do
+    nil
+  end
+
   def block(quoted) do
     {:__block__, [], quoted}
   end
@@ -194,28 +198,30 @@ defmodule ScenicJsx do
   end
 
   def element_to_quoted(
+        {:element, [<<x0::integer, _rest::binary>> = module_name | attributes], children},
+        {main_graph, sub_graph}
+      )
+      when x0 >= ?A and x0 <= ?Z do
+    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
+
+    {new_quoted_children, new_sub_graph} = process_children(quoted_children)
+
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
+
+    new_graph =
+      {{:., [], [{:__aliases__, [alias: false], [String.to_atom(module_name)]}, :add_to_graph]},
+       [], [new_quoted_children, quoted_attributes]}
+
+    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
+  end
+
+  def element_to_quoted(
         {:element, [function_name | attributes], children},
         {main_graph, sub_graph}
       ) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
-    {new_quoted_children, new_sub_graph} =
-      case quoted_children do
-        [] ->
-          {"", []}
-
-        list when is_list(list) ->
-          new_sub_graph =
-            list
-            |> Enum.map(fn graph ->
-              {sub_graph_id(), graph}
-            end)
-
-          {keyword_list_to_quoted_varible(new_sub_graph), new_sub_graph}
-
-        other ->
-          {other, []}
-      end
+    {new_quoted_children, new_sub_graph} = process_children(quoted_children)
 
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
     new_graph = {String.to_atom(function_name), [], [new_quoted_children, quoted_attributes]}
@@ -224,6 +230,24 @@ defmodule ScenicJsx do
 
   # This is for text or other element
   def element_to_quoted(other, {[], []}) do
+    {other, []}
+  end
+
+  def process_children([]) do
+    {"", []}
+  end
+
+  def process_children(list) when is_list(list) do
+    new_sub_graph =
+      list
+      |> Enum.map(fn graph ->
+        {sub_graph_id(), graph}
+      end)
+
+    {keyword_list_to_quoted_varible(new_sub_graph), new_sub_graph}
+  end
+
+  def process_children(other) do
     {other, []}
   end
 

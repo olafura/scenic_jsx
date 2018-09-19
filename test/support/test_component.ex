@@ -1,10 +1,12 @@
 defmodule TestComponent do
   use Scenic.Component
+  require ScenicJsx
+  import ScenicJsx
 
   alias Scenic.ViewPort
   alias Scenic.Graph
 
-  import Scenic.Primitives, only: [{:text, 2}]
+  import Scenic.Primitives, only: [{:text, 3}]
 
   def verify(text) when is_bitstring(text), do: {:ok, text}
   def verify(_), do: :invalid_data
@@ -17,9 +19,9 @@ defmodule TestComponent do
       opts[:viewport]
       |> ViewPort.info()
 
-    graph =
-      Graph.build()
-      |> text(text)
+    graph = ~z(
+        <text>#{text}</text>
+      )
       |> push_graph()
 
     {:ok, %{graph: graph, viewport: opts[:viewport]}}

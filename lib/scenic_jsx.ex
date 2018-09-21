@@ -13,7 +13,9 @@ defmodule ScenicJsx do
     |> ignore(whitespace)
     |> reduce({Enum, :join, [""]})
 
-  text = utf8_string([not: ?<], min: 1)
+  text =
+    ignore(whitespace)
+    |> utf8_string([not: ?<], min: 1)
 
   sub =
     string("$")
@@ -123,6 +125,15 @@ defmodule ScenicJsx do
     |> Enum.map(&clean_litteral/1)
   end
 
+  defmacro sigil_z({:<<>>, _meta, pieces}, 'parse') do
+    pieces
+    |> Enum.map(&clean_litteral/1)
+    |> parse_jsx()
+    |> IO.inspect()
+
+    nil
+  end
+
   defmacro sigil_z({:<<>>, _meta, pieces}, 'debug') do
     {:ok, jsx} =
       pieces
@@ -181,18 +192,7 @@ defmodule ScenicJsx do
   def element_to_quoted({:element, [], children}, {main_graph, sub_graph}) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
-    new_graph =
-      {:group, [],
-       [
-         {:fn, [],
-          [
-            {:->, [],
-             [
-               [{:graph, [], nil}],
-               to_pipe(quoted_children ++ [{:graph, [], nil}])
-             ]}
-          ]}
-       ]}
+    new_graph = new_group(quoted_children)
 
     {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
   end
@@ -233,6 +233,14 @@ defmodule ScenicJsx do
     {other, []}
   end
 
+  def element_to_quoted(other, {main_graph, sub_graph}) do
+    {[other | main_graph], sub_graph}
+  end
+
+  def map_sub_graph(graph, sub_graph_functions) do
+    Enum.each(sub_graph_functions, &Scenic.Primitives.group(graph, &1, []))
+  end
+
   def process_children([]) do
     {"", []}
   end
@@ -265,6 +273,20 @@ defmodule ScenicJsx do
     |> String.to_atom()
   end
 
+  def new_group(quoted_children) do
+    {:group, [],
+     [
+       {:fn, [],
+        [
+          {:->, [],
+           [
+             [{:graph, [], nil}],
+             to_pipe(quoted_children ++ [{:graph, [], nil}])
+           ]}
+        ]}
+     ]}
+  end
+
   def attribute_to_quoted({:attribute, [attribute_name, attribute_value]}, acc) do
     [{String.to_atom(attribute_name), attribute_value} | acc]
   end
@@ -284,7 +306,7 @@ defmodule ScenicJsx do
   end
 
   defp new_graph_piped(quoted_graph) do
-    to_pipe(quoted_graph ++ [start_graph()])
+    to_pipe(List.wrap(quoted_graph) ++ [start_graph()])
   end
 
   defp fix_element([element | nested]) do

@@ -1,17 +1,20 @@
-defmodule TestComponent do
+defmodule TestSubGraphComponent do
   use Scenic.Component
   require ScenicJsx
   import ScenicJsx
 
   import Scenic.Primitives, only: [{:text, 3}]
 
-  def verify(text) when is_bitstring(text), do: {:ok, text}
+  def verify(sub_graph_list) when is_list(sub_graph_list), do: {:ok, sub_graph_list}
   def verify(_), do: :invalid_data
 
-  def init(text, opts) do
+  def init(sub_graphs, opts) do
     graph =
       ~z(
-        <text>#{text}</text>
+        <>
+         <text/>
+         #{ScenicJsx.map_sub_graph(sub_graphs)}
+        </>
       )
       |> push_graph()
 

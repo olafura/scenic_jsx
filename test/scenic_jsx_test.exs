@@ -30,6 +30,7 @@ defmodule ScenicJsxTest do
             Testing
           </text>
         </>
+        <text/>
       </>
     )
   end
@@ -46,6 +47,14 @@ defmodule ScenicJsxTest do
   test "test basic scenic graph module" do
     assert %Scenic.Graph{} = ~z(
       <TestComponent>Testing</TestComponent>
+    )
+  end
+
+  test "test basic scenic sub graph module" do
+    assert %Scenic.Graph{} = ~z(
+      <TestSubGraphComponent>
+        <text>Passed in</text>
+      </TestSubGraphComponent>
     )
   end
 end

@@ -6,13 +6,13 @@ defmodule ScenicJsx.MixProject do
       app: :scenic_jsx,
       version: "0.1.0",
       elixir: "~> 1.7",
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib","test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help compile.app" to learn about applications.
@@ -26,8 +26,6 @@ defmodule ScenicJsx.MixProject do
   defp deps do
     [
       {:elixir_make, "~> 0.4"},
-
-      # deps to use AFTER it is released publicly
       {:scenic, "~> 0.7.0"},
       {:scenic_driver_glfw, "~> 0.7.0"},
       {:nimble_parsec, "~> 0.2"},

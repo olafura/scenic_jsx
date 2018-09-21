@@ -168,7 +168,7 @@ defmodule ScenicJsx do
   def new_sub_graphs(sub_graphs) do
     sub_graphs
     |> Enum.map(fn {atom, graph} ->
-      {:=, [], [{atom, [], nil}, new_graph_piped(List.wrap(graph))]}
+      {:=, [], [{atom, [], nil}, new_group_function(List.wrap(graph))]}
     end)
     |> block()
   end
@@ -238,7 +238,7 @@ defmodule ScenicJsx do
   end
 
   def map_sub_graph(graph, sub_graph_functions) do
-    Enum.each(sub_graph_functions, &Scenic.Primitives.group(graph, &1, []))
+    Enum.reduce(sub_graph_functions, graph, fn sf, g -> Scenic.Primitives.group(g, sf, []) end)
   end
 
   def process_children([]) do
@@ -271,6 +271,21 @@ defmodule ScenicJsx do
     "sub_graph_#{uuid}"
     |> String.replace("-", "_")
     |> String.to_atom()
+  end
+
+  def new_group_function(quoted_children) do
+    {:fn, [],
+      [
+        {:->, [],
+        [
+          [{:graph, [], nil}],
+          to_pipe(quoted_children ++ [{:graph, [], nil}])
+        ]}
+      ]}
+  end
+
+  def new_group(quoted_children) do
+    {:group, [],[new_group_function(quoted_children)]}
   end
 
   def new_group(quoted_children) do

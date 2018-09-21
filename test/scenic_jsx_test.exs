@@ -57,4 +57,17 @@ defmodule ScenicJsxTest do
       </TestSubGraphComponent>
     )
   end
+
+  test "test map_sub_graph" do
+    sub_graphs = [
+      fn graph -> graph |> text("Passed in", []) end
+    ]
+
+    assert %Scenic.Graph{} = ~z(
+      <>
+        <text/>
+        #{ScenicJsx.map_sub_graph(sub_graphs)}
+      </>
+    )
+  end
 end

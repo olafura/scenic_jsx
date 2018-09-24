@@ -288,20 +288,6 @@ defmodule ScenicJsx do
     {:group, [],[new_group_function(quoted_children)]}
   end
 
-  def new_group(quoted_children) do
-    {:group, [],
-     [
-       {:fn, [],
-        [
-          {:->, [],
-           [
-             [{:graph, [], nil}],
-             to_pipe(quoted_children ++ [{:graph, [], nil}])
-           ]}
-        ]}
-     ]}
-  end
-
   def attribute_to_quoted({:attribute, [attribute_name, attribute_value]}, acc) do
     [{String.to_atom(attribute_name), attribute_value} | acc]
   end

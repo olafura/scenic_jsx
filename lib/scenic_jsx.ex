@@ -186,13 +186,17 @@ defmodule ScenicJsx do
   end
 
   def element_to_quoted({:element, [], children}, {[], []}) do
-    element_to_quoted(children, {[], []})
+    element_to_quoted(children, {[start_graph()], []})
+  end
+
+  def element_to_quoted({:element, _, _children} = element, {[], []}) do
+    element_to_quoted(element, {[start_graph()], []})
   end
 
   def element_to_quoted({:element, [], children}, {main_graph, sub_graph}) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
-    new_graph = new_group(quoted_children)
+    new_graph = new_group(List.delete_at(quoted_children, -1))
 
     {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
   end
@@ -307,7 +311,7 @@ defmodule ScenicJsx do
   end
 
   defp new_graph_piped(quoted_graph) do
-    to_pipe(List.wrap(quoted_graph) ++ [start_graph()])
+    to_pipe(List.wrap(quoted_graph))
   end
 
   defp fix_element([element | nested]) do

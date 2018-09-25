@@ -61,6 +61,10 @@ defmodule ScenicJsx do
   empty_tag =
     ignore(whitespace)
     |> ignore(string("<"))
+    |> repeat_until(
+      choice([attribute, ascii_char([?>]), string("/>")]),
+      [ascii_char([?>]), string("/>")]
+    )
     |> ignore(string(">"))
     |> ignore(whitespace)
     |> label("empty_tag")
@@ -87,7 +91,7 @@ defmodule ScenicJsx do
 
   defcombinatorp(
     :xml,
-    choice([opening_tag, empty_tag])
+    choice([empty_tag, opening_tag])
     |> repeat_until(choice([parsec(:xml), sub, text]), [string("</"), string("/>")])
     |> choice([closing_tag, self_closing])
     |> reduce({:fix_element, []})
@@ -187,6 +191,11 @@ defmodule ScenicJsx do
 
   def element_to_quoted({:element, [], children}, {[], []}) do
     element_to_quoted(children, {[start_graph()], []})
+  end
+
+  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {[], []}) do
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
+    element_to_quoted(children, {[start_graph(quoted_attributes)], []})
   end
 
   def element_to_quoted({:element, _, _children} = element, {[], []}) do
@@ -296,9 +305,9 @@ defmodule ScenicJsx do
     [{String.to_atom(attribute_name), attribute_value} | acc]
   end
 
-  def start_graph() do
+  def start_graph(options \\ []) do
     quote do
-      Scenic.Graph.build()
+      Scenic.Graph.build(unquote(options))
     end
   end
 
@@ -311,15 +320,22 @@ defmodule ScenicJsx do
   end
 
   defp new_graph_piped(quoted_graph) do
+    # to_pipe(List.wrap(quoted_graph) ++ [start_graph()])
     to_pipe(List.wrap(quoted_graph))
+    # |> IO.inspect(label: 3)
   end
 
   defp fix_element([element | nested]) do
     tag = elem(element, 1) |> List.first()
     {closing_tag, new_nested} = List.pop_at(nested, -1)
 
-    if not (is_nil(closing_tag) or tag === "" or {:closing_tag, List.wrap(tag)} === closing_tag) do
-      raise "Closing tag doesn't match opening tag"
+    if not (is_nil(closing_tag) or tag === "" or is_tuple(tag) or {:closing_tag, List.wrap(tag)} === closing_tag) do
+      with {:closing_tag, cl_tag} <- closing_tag do
+        raise "Closing tag doesn't match opening tag open_tag: #{inspect(tag)} closing_tag: #{inspect(cl_tag)}"
+      else
+        _ ->
+          raise "Closing tag doesn't match opening tag open_tag: #{inspect(tag)} closing_tag: #{inspect(closing_tag)}"
+      end
     end
 
     Tuple.append(element, new_nested)

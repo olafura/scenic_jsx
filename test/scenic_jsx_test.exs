@@ -70,4 +70,12 @@ defmodule ScenicJsxTest do
       </>
     )
   end
+
+  test "test basic scenic graph with build options" do
+    assert %Scenic.Graph{} = ~z(
+      <font_size=#{20} translate=#{{0, 10}}>
+        <text id=#{:temperature} text_align=#{:center} font_size=#{160}>Testing</text>
+      </>
+    )
+  end
 end

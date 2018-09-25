@@ -217,7 +217,7 @@ defmodule ScenicJsx do
       when x0 >= ?A and x0 <= ?Z do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
-    {new_quoted_children, new_sub_graph} = process_children(quoted_children)
+    {new_quoted_children, new_sub_graph} = process_children(quoted_children, module_name)
 
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
 
@@ -234,10 +234,17 @@ defmodule ScenicJsx do
       ) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
-    {new_quoted_children, new_sub_graph} = process_children(quoted_children)
+    {new_quoted_children, new_sub_graph} = process_children(quoted_children, function_name)
 
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
-    new_graph = {String.to_atom(function_name), [], [new_quoted_children, quoted_attributes]}
+    new_graph =
+      case new_quoted_children do
+        [] ->
+          {String.to_atom(function_name), [], [quoted_attributes]}
+        other ->
+          {String.to_atom(function_name), [], [other, quoted_attributes]}
+      end
+
     {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
   end
 
@@ -254,11 +261,15 @@ defmodule ScenicJsx do
     Enum.reduce(sub_graph_functions, graph, fn sf, g -> Scenic.Primitives.group(g, sf, []) end)
   end
 
-  def process_children([]) do
+  def process_children([], "text") do
     {"", []}
   end
 
-  def process_children(list) when is_list(list) do
+  def process_children([], _) do
+    {[], []}
+  end
+
+  def process_children(list, _) when is_list(list) do
     new_sub_graph =
       list
       |> Enum.map(fn graph ->
@@ -268,7 +279,7 @@ defmodule ScenicJsx do
     {keyword_list_to_quoted_varible(new_sub_graph), new_sub_graph}
   end
 
-  def process_children(other) do
+  def process_children(other, _) do
     {other, []}
   end
 

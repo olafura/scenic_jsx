@@ -202,6 +202,16 @@ defmodule ScenicJsx do
     element_to_quoted(element, {[start_graph()], []})
   end
 
+  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {main_graph, sub_graph}) do
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
+
+    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
+
+    new_graph = new_group(List.delete_at(quoted_children, -1), quoted_attributes)
+
+    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
+  end
+
   def element_to_quoted({:element, [], children}, {main_graph, sub_graph}) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
 
@@ -308,8 +318,8 @@ defmodule ScenicJsx do
       ]}
   end
 
-  def new_group(quoted_children) do
-    {:group, [],[new_group_function(quoted_children)]}
+  def new_group(quoted_children, options \\ []) do
+    {:group, [],[new_group_function(quoted_children), options]}
   end
 
   def attribute_to_quoted({:attribute, [attribute_name, attribute_value]}, acc) do

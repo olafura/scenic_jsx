@@ -26,8 +26,8 @@ defmodule ScenicJsx.MixProject do
   defp deps do
     [
       {:elixir_make, "~> 0.4"},
-      {:scenic, "~> 0.7.0"},
-      {:scenic_driver_glfw, "~> 0.7.0"},
+      {:scenic, "~> 0.8"},
+      {:scenic_driver_glfw, "~> 0.8"},
       {:nimble_parsec, "~> 0.2"},
       {:uuid, "~> 1.1"}
     ]

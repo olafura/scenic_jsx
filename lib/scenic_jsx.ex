@@ -146,7 +146,7 @@ defmodule ScenicJsx do
       |> Enum.map(&clean_litteral/1)
       |> parse_jsx()
 
-    ast = create_graph(jsx, caller)
+    ast = create_graph(jsx, %{caller: caller})
     ast |> Macro.to_string() |> Code.format_string!() |> IO.puts()
     ast
   end

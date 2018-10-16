@@ -133,7 +133,6 @@ defmodule ScenicJsx do
     pieces
     |> Enum.map(&clean_litteral/1)
     |> parse_jsx()
-    |> IO.inspect()
 
     nil
   end
@@ -341,9 +340,7 @@ defmodule ScenicJsx do
   end
 
   defp new_graph_piped(quoted_graph) do
-    # to_pipe(List.wrap(quoted_graph) ++ [start_graph()])
     to_pipe(List.wrap(quoted_graph))
-    # |> IO.inspect(label: 3)
   end
 
   defp fix_element([element | nested]) do

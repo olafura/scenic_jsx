@@ -139,29 +139,33 @@ defmodule ScenicJsx do
   end
 
   defmacro sigil_z({:<<>>, _meta, pieces}, 'debug') do
+    caller = __CALLER__
+
     {:ok, jsx} =
       pieces
       |> Enum.map(&clean_litteral/1)
       |> parse_jsx()
 
-    ast = create_graph(jsx)
+    ast = create_graph(jsx, caller)
     ast |> Macro.to_string() |> Code.format_string!() |> IO.puts()
     ast
   end
 
   defmacro sigil_z({:<<>>, _meta, pieces}, '') do
+    caller = __CALLER__
+
     {:ok, jsx} =
       pieces
       |> Enum.map(&clean_litteral/1)
       |> parse_jsx()
 
-    create_graph(jsx)
+    create_graph(jsx, %{caller: caller})
   end
 
-  def create_graph(jsx_ast) do
-    {quoted_main_graph, quoted_sub_graphs} = element_to_quoted(jsx_ast, {[], []})
-    new_quoted_sub_graph = new_sub_graphs(quoted_sub_graphs)
-    new_quoted_main_graph = new_graph_piped(quoted_main_graph)
+  def create_graph(jsx_ast, options) do
+    {quoted_main_graph, quoted_sub_graphs} = element_to_quoted(jsx_ast, {[], []}, options)
+    new_quoted_sub_graph = new_sub_graphs(quoted_sub_graphs, options)
+    new_quoted_main_graph = new_graph_piped(quoted_main_graph, options)
 
     quote do
       unquote(new_quoted_sub_graph)
@@ -169,51 +173,51 @@ defmodule ScenicJsx do
     end
   end
 
-  def new_sub_graphs(sub_graphs) do
+  def new_sub_graphs(sub_graphs, options) do
     sub_graphs
     |> Enum.map(fn {atom, graph} ->
       {:=, [], [{atom, [], nil}, new_group_function(List.wrap(graph))]}
     end)
-    |> block()
+    |> block(options)
   end
 
-  def block([]) do
+  def block([], _options) do
     nil
   end
 
-  def block(quoted) do
+  def block(quoted, _options) do
     {:__block__, [], quoted}
   end
 
-  def element_to_quoted(elements, {main_graph, sub_graph}) when is_list(elements) do
-    Enum.reduce(elements, {main_graph, sub_graph}, &element_to_quoted/2)
+  def element_to_quoted(elements, {main_graph, sub_graph}, options) when is_list(elements) do
+    Enum.reduce(elements, {main_graph, sub_graph}, &element_to_quoted(&1, &2, options))
   end
 
-  def element_to_quoted({:element, [], children}, {[], []}) do
-    element_to_quoted(children, {[start_graph()], []})
+  def element_to_quoted({:element, [], children}, {[], []}, options) do
+    element_to_quoted(children, {[start_graph()], []}, options)
   end
 
-  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {[], []}) do
-    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
-    element_to_quoted(children, {[start_graph(quoted_attributes)], []})
+  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {[], []}, options) do
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
+    element_to_quoted(children, {[start_graph(quoted_attributes)], []}, options)
   end
 
-  def element_to_quoted({:element, _, _children} = element, {[], []}) do
-    element_to_quoted(element, {[start_graph()], []})
+  def element_to_quoted({:element, _, _children} = element, {[], []}, options) do
+    element_to_quoted(element, {[start_graph()], []}, options)
   end
 
-  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {main_graph, sub_graph}) do
-    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
+  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {main_graph, sub_graph}, options) do
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
 
-    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
+    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     new_graph = new_group(List.delete_at(quoted_children, -1), quoted_attributes)
 
     {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
   end
 
-  def element_to_quoted({:element, [], children}, {main_graph, sub_graph}) do
-    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
+  def element_to_quoted({:element, [], children}, {main_graph, sub_graph}, options) do
+    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     new_graph = new_group(List.delete_at(quoted_children, -1))
 
@@ -222,17 +226,21 @@ defmodule ScenicJsx do
 
   def element_to_quoted(
         {:element, [<<x0::integer, _rest::binary>> = module_name | attributes], children},
-        {main_graph, sub_graph}
+        {main_graph, sub_graph},
+        %{caller: caller} = options
       )
       when x0 >= ?A and x0 <= ?Z do
-    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
+    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     {new_quoted_children, new_sub_graph} = process_children(quoted_children, module_name)
+    atom_module_name = String.to_atom("Elixir." <> module_name)
+    aliases = Map.new(caller.aliases)
+    the_alias = Map.get(aliases, atom_module_name, false)
 
-    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
 
     new_graph =
-      {{:., [], [{:__aliases__, [alias: false], [String.to_atom(module_name)]}, :add_to_graph]},
+      {{:., [], [{:__aliases__, [alias: the_alias], [atom_module_name]}, :add_to_graph]},
        [], [new_quoted_children, quoted_attributes]}
 
     {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
@@ -240,13 +248,14 @@ defmodule ScenicJsx do
 
   def element_to_quoted(
         {:element, [function_name | attributes], children},
-        {main_graph, sub_graph}
+        {main_graph, sub_graph},
+        options
       ) do
-    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []})
+    {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     {new_quoted_children, new_sub_graph} = process_children(quoted_children, function_name)
 
-    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted/2) |> Enum.reverse()
+    quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
     new_graph =
       case new_quoted_children do
         [] ->
@@ -259,11 +268,11 @@ defmodule ScenicJsx do
   end
 
   # This is for text or other element
-  def element_to_quoted(other, {[], []}) do
+  def element_to_quoted(other, {[], []}, _options) do
     {other, []}
   end
 
-  def element_to_quoted(other, {main_graph, sub_graph}) do
+  def element_to_quoted(other, {main_graph, sub_graph}, _options) do
     {[other | main_graph], sub_graph}
   end
 
@@ -322,7 +331,7 @@ defmodule ScenicJsx do
     {:group, [],[new_group_function(quoted_children), options]}
   end
 
-  def attribute_to_quoted({:attribute, [attribute_name, attribute_value]}, acc) do
+  def attribute_to_quoted({:attribute, [attribute_name, attribute_value]}, acc, _options) do
     [{String.to_atom(attribute_name), attribute_value} | acc]
   end
 
@@ -340,7 +349,7 @@ defmodule ScenicJsx do
     {:|>, [], [to_pipe(tail), head]}
   end
 
-  defp new_graph_piped(quoted_graph) do
+  defp new_graph_piped(quoted_graph, _options) do
     to_pipe(List.wrap(quoted_graph))
   end
 

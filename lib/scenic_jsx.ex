@@ -22,10 +22,11 @@ defmodule ScenicJsx do
     |> concat(ascii_string([?0..?9], min: 1))
     |> traverse({:sub_context, []})
 
-  quote_string = string("\"")
+  quote_string = ascii_char([?"])
 
   quoted_attribute_text =
     ignore(whitespace)
+    |> ignore(quote_string)
     |> repeat_until(
       choice([
         ~s(\") |> string() |> replace(?'),
@@ -41,7 +42,7 @@ defmodule ScenicJsx do
     ignore(whitespace)
     |> concat(tag)
     |> ignore(string("="))
-    |> choice([quoted_attribute_text, sub])
+    |> choice([sub, quoted_attribute_text])
     |> label("attribute")
     |> tag(:attribute)
 
@@ -365,13 +366,14 @@ defmodule ScenicJsx do
 
   defp sub_context(_rest, args, context, _line, _offset) do
     ref = args |> Enum.reverse() |> Enum.join()
-    {context |> Map.get(ref) |> List.wrap(), context}
+    {:ok, value} = context |> Map.get(ref)
+    {[value], context}
   end
 
   defp clean_litteral(
          {:::, _, [{{:., _, [Kernel, :to_string]}, _, [litteral]}, {:binary, _, nil}]}
        ) do
-    litteral
+    {:ok, litteral}
   end
 
   defp clean_litteral(other) do

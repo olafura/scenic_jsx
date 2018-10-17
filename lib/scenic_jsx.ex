@@ -213,7 +213,7 @@ defmodule ScenicJsx do
 
     new_graph = new_group(List.delete_at(quoted_children, -1), quoted_attributes)
 
-    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
+    {[new_graph | List.wrap(main_graph)], sub_graph ++ quote_children_sub_graph}
   end
 
   def element_to_quoted({:element, [], children}, {main_graph, sub_graph}, options) do
@@ -221,7 +221,7 @@ defmodule ScenicJsx do
 
     new_graph = new_group(List.delete_at(quoted_children, -1))
 
-    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph}
+    {[new_graph | List.wrap(main_graph)], sub_graph ++ quote_children_sub_graph}
   end
 
   def element_to_quoted(
@@ -243,7 +243,7 @@ defmodule ScenicJsx do
       {{:., [], [{:__aliases__, [alias: the_alias], [atom_module_name]}, :add_to_graph]},
        [], [new_quoted_children, quoted_attributes]}
 
-    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
+    {[new_graph | List.wrap(main_graph)], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
   end
 
   def element_to_quoted(
@@ -264,7 +264,7 @@ defmodule ScenicJsx do
           {String.to_atom(function_name), [], [other, quoted_attributes]}
       end
 
-    {[new_graph | main_graph], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
+    {[new_graph | List.wrap(main_graph)], sub_graph ++ quote_children_sub_graph ++ new_sub_graph}
   end
 
   # This is for text or other element
@@ -273,7 +273,7 @@ defmodule ScenicJsx do
   end
 
   def element_to_quoted(other, {main_graph, sub_graph}, _options) do
-    {[other | main_graph], sub_graph}
+    {[other | List.wrap(main_graph)], sub_graph}
   end
 
   def map_sub_graph(graph, sub_graph_functions) do

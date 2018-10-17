@@ -146,7 +146,7 @@ defmodule ScenicJsx do
       |> Enum.map(&clean_litteral/1)
       |> parse_jsx()
 
-    ast = create_graph(jsx, %{caller: caller})
+    ast = create_graph(jsx, %{caller: caller, start: true})
     ast |> Macro.to_string() |> Code.format_string!() |> IO.puts()
     ast
   end
@@ -159,7 +159,7 @@ defmodule ScenicJsx do
       |> Enum.map(&clean_litteral/1)
       |> parse_jsx()
 
-    create_graph(jsx, %{caller: caller})
+    create_graph(jsx, %{caller: caller, start: true})
   end
 
   def create_graph(jsx_ast, options) do
@@ -193,11 +193,13 @@ defmodule ScenicJsx do
     Enum.reduce(elements, {main_graph, sub_graph}, &element_to_quoted(&1, &2, options))
   end
 
-  def element_to_quoted({:element, [], children}, {[], []}, options) do
+  def element_to_quoted({:element, [], children}, {[], []}, %{start: true} = options) do
+    options = Map.delete(options, :start)
     element_to_quoted(children, {[start_graph()], []}, options)
   end
 
-  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {[], []}, options) do
+  def element_to_quoted({:element, [{:attribute, _} | _] = attributes, children}, {[], []}, %{start: true} = options) do
+    options = Map.delete(options, :start)
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
     element_to_quoted(children, {[start_graph(quoted_attributes)], []}, options)
   end
@@ -250,7 +252,7 @@ defmodule ScenicJsx do
         {:element, [function_name | attributes], children},
         {main_graph, sub_graph},
         options
-      ) do
+      ) when is_binary(function_name) do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     {new_quoted_children, new_sub_graph} = process_children(quoted_children, function_name)

@@ -260,6 +260,8 @@ defmodule ScenicJsx do
       case new_quoted_children do
         [] ->
           {String.to_atom(function_name), [], [quoted_attributes]}
+        [other] ->
+          {String.to_atom(function_name), [], [other, quoted_attributes]}
         other ->
           {String.to_atom(function_name), [], [other, quoted_attributes]}
       end
@@ -284,18 +286,22 @@ defmodule ScenicJsx do
     {"", []}
   end
 
+  def process_children([], "text_field") do
+    {"", []}
+  end
+
   def process_children([], _) do
     {[], []}
   end
 
   def process_children(list, _) when is_list(list) do
-    new_sub_graph =
-      list
-      |> Enum.map(fn graph ->
-        {sub_graph_id(), graph}
-      end)
-
-    {keyword_list_to_quoted_varible(new_sub_graph), new_sub_graph}
+    case List.last(list) do
+      {{:., _, [{:__aliases__, _, [:Scenic, :Graph]}, :build]}, _, _} ->
+        id = sub_graph_id()
+        {[{id, [], nil}], [{id, list}]}
+      _ ->
+        {list, []}
+    end
   end
 
   def process_children(other, _) do

@@ -29,7 +29,8 @@ defmodule ScenicJsx.MixProject do
       {:scenic, "~> 0.8"},
       {:scenic_driver_glfw, "~> 0.8"},
       {:nimble_parsec, "~> 0.2"},
-      {:uuid, "~> 1.1"}
+      {:uuid, "~> 1.1"},
+      {:exx, github: "olafura/exx"}
     ]
   end
 end

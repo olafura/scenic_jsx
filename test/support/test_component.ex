@@ -1,7 +1,6 @@
 defmodule TestComponent do
   use Scenic.Component
-  require ScenicJsx
-  import ScenicJsx
+  use ScenicJsx
 
   import Scenic.Primitives, only: [{:text, 3}]
 
@@ -10,10 +9,10 @@ defmodule TestComponent do
 
   def init(text, opts) do
     graph =
-      ~z(
+      ~x(
         <text>#{text}</text>
-      )
-      |> push_graph()
+      )debug
+      #|> push_graph()
 
     {:ok, %{graph: graph, viewport: opts[:viewport]}}
   end

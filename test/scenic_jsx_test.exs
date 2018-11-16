@@ -1,7 +1,6 @@
 defmodule ScenicJsxTest do
   use ExUnit.Case
-  require ScenicJsx
-  import ScenicJsx
+  use ScenicJsx
 
   import Scenic.Primitives
   import Scenic.Components
@@ -10,12 +9,12 @@ defmodule ScenicJsxTest do
 
   test "test simple jsx" do
     assert {:ok, _} =
-             ~z(<foo something=#{{1, 1}}><bar2 something="a"/><a>2</a></foo>)raw
-             |> parse_jsx()
+             ~x(<foo something=#{{1, 1}}><bar2 something="a"/><a>2</a></foo>)raw
+             |> parse_eex()
   end
 
   test "test basic scenic graph" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <>
         <text id=#{:temperature} text_align=#{:center} font_size=#{160}>Testing</text>
       </>
@@ -23,7 +22,7 @@ defmodule ScenicJsxTest do
   end
 
   test "test basic scenic graph with group" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <>
         <text/>
         <>
@@ -38,7 +37,7 @@ defmodule ScenicJsxTest do
 
   test "test basic scenic graph with elixir data" do
     string = "Testing"
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <>
         <text id=#{:temperature} text_align=#{:center} font_size=#{160}>#{string}</text>
       </>
@@ -46,13 +45,13 @@ defmodule ScenicJsxTest do
   end
 
   test "test basic scenic graph module" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <TestComponent>Testing</TestComponent>
     )
   end
 
   test "test basic scenic sub graph module" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <TestSubGraphComponent>
         <text>Passed in</text>
       </TestSubGraphComponent>
@@ -64,7 +63,7 @@ defmodule ScenicJsxTest do
       fn graph -> graph |> text("Passed in", []) end
     ]
 
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <>
         <text/>
         #{ScenicJsx.map_sub_graph(sub_graphs)}
@@ -73,7 +72,7 @@ defmodule ScenicJsxTest do
   end
 
   test "test basic scenic graph with build options" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <font_size=#{20} translate=#{{0, 10}}>
         <text id=#{:temperature} text_align=#{:center} font_size=#{160}>Testing</text>
       </>
@@ -81,7 +80,7 @@ defmodule ScenicJsxTest do
   end
 
   test "test basic scenic graph with group options" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <>
         <font_size=#{20} translate=#{{0, 10}}>
           <text translate=#{{15, 60}} id=#{:event}>Event received</text>
@@ -92,7 +91,7 @@ defmodule ScenicJsxTest do
   end
 
   test "test advanced scenic graph with group options" do
-    assert %Scenic.Graph{} = ~z(
+    assert %Scenic.Graph{} = ~x(
       <font=#{:roboto} font_size=#{24} theme=#{:dark}>
         <translate=#{{0, 20}}>
          <text translate=#{{15, 20}}>Various components</text>

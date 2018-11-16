@@ -1,7 +1,6 @@
 defmodule TestSubGraphComponent do
   use Scenic.Component
-  require ScenicJsx
-  import ScenicJsx
+  use ScenicJsx
 
   import Scenic.Primitives, only: [{:text, 3}]
 
@@ -10,7 +9,7 @@ defmodule TestSubGraphComponent do
 
   def init(sub_graphs, opts) do
     graph =
-      ~z(
+      ~x(
         <>
          <text/>
          #{ScenicJsx.map_sub_graph(sub_graphs)}

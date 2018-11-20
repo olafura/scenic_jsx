@@ -8,15 +8,15 @@ defmodule TestSubGraphComponent do
   def verify(_), do: :invalid_data
 
   def init(sub_graphs, opts) do
-    graph =
-      ~x(
-        <>
-         <text/>
-         #{ScenicJsx.map_sub_graph(sub_graphs)}
-        </>
-      )
-      |> push_graph()
+    # graph =
+    #   ~x(
+    #     <>
+    #      <text/>
+    #      #{ScenicJsx.map_sub_graph(sub_graphs)}
+    #     </>
+    #   )
+    #   |> push_graph()
 
-    {:ok, %{graph: graph, viewport: opts[:viewport]}}
+    # {:ok, %{graph: graph, viewport: opts[:viewport]}}
   end
 end

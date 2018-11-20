@@ -31,10 +31,42 @@ defmodule ScenicJsx.Transform do
   end
 
   # 1
+  # 2
+  # 1
+  # 5
+  # 1
   # 4
   # 8
   # 1
   # 9
+  # 8
+  # 1
+  # 9
+
+  # 1
+  # 2
+  # 1
+  # 5
+  # 1
+  # 6
+  # 1
+  # 5
+  # 1
+  # 9
+
+  # 1
+  # 2
+  # 1
+  # 8
+  # 1
+  # 6
+  # 1
+  # 8
+  # 1
+  # 9
+  # 8
+  # 1
+
 
   # def element_to_quoted(elements, {main_graph, sub_graph}, options) when is_list(elements) do
   #   IO.puts(1)
@@ -162,6 +194,7 @@ defmodule ScenicJsx.Transform do
 
   def element_to_quoted(%Exx.Fragment{attributes: attributes, children: children}, {main_graph, sub_graph}, options) when map_size(attributes) === 0 do
     IO.puts(6)
+    # IO.inspect(%{attributes: attributes, main_graph: main_graph, sub_graph: sub_graph})
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     new_graph = new_group(List.delete_at(quoted_children, -1))
@@ -169,7 +202,7 @@ defmodule ScenicJsx.Transform do
     {[new_graph | List.wrap(main_graph)], sub_graph ++ quote_children_sub_graph}
   end
 
-  def element_to_quoted(%Exx.Fragment{attributes: attributes, children: children}, {main_graph, sub_graph}, options) do
+  def element_to_quoted(%{attributes: attributes, children: children}, {main_graph, sub_graph}, options) do
     IO.puts(5)
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
 

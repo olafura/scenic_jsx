@@ -8,12 +8,12 @@ defmodule TestComponent do
   def verify(_), do: :invalid_data
 
   def init(text, opts) do
-    graph =
-      ~x(
-        <text>#{text}</text>
-      )
-      |> push_graph()
+    # graph =
+    #   ~x(
+    #     <text>#{text}</text>
+    #   )
+    #   |> push_graph()
 
-    {:ok, %{graph: graph, viewport: opts[:viewport]}}
+    # {:ok, %{graph: graph, viewport: opts[:viewport]}}
   end
 end

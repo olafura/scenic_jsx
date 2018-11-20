@@ -74,7 +74,7 @@ defmodule ScenicJsxTest do
                },
                3 => %{
                  __struct__: Scenic.Primitive,
-                 data: "Testing\n          ",
+                 data: "Testing",
                  id: :temperature,
                  module: Scenic.Primitive.Text,
                  parent_uid: 2,

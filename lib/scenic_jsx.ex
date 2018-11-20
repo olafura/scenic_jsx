@@ -16,6 +16,10 @@ defmodule ScenicJsx do
      end
   end
 
+  def map_sub_graph(graph, sub_graph_functions) do
+    Enum.reduce(sub_graph_functions, graph, fn sf, g -> Scenic.Primitives.group(g, sf, []) end)
+  end
+
   defmacro sigil_x(params, options) do
     caller = __CALLER__
     # IO.inspect(caller.module, label: :caller)

@@ -10,7 +10,7 @@ defmodule ScenicJsxTest do
   test "test simple jsx" do
     assert {:ok, _} =
              ~x(<foo something=#{{1, 1}}><bar2 something="a"/><a>2</a></foo>)raw
-             |> parse_eex()
+             |> parse_exx()
   end
 
   test "test basic scenic graph" do

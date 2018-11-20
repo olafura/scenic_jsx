@@ -45,20 +45,19 @@ defmodule ScenicJsx.Transform do
     element_to_quoted(children, {[start_graph(quoted_attributes)], []}, options)
   end
 
-  def element_to_quoted(%Exx.Fragment{attributes: attributes} = fragment, {[], []}, options) when map_size(attributes) === 0 do
+  def element_to_quoted(%{attributes: attributes} = fragment, {[], []}, options) when map_size(attributes) === 0 do
     element_to_quoted(fragment, {[start_graph()], []}, options)
   end
 
-  def element_to_quoted(%Exx.Element{attributes: attributes, children: children}, {main_graph, sub_graph}, options) when map_size(attributes) === 0 do
+  def element_to_quoted(%Exx.Fragment{attributes: attributes, children: children}, {main_graph, sub_graph}, options) when map_size(attributes) === 0 do
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
-    |> IO.inspect()
 
     new_graph = new_group(List.delete_at(quoted_children, -1))
 
     {[new_graph | List.wrap(main_graph)], sub_graph ++ quote_children_sub_graph}
   end
 
-  def element_to_quoted(%Exx.Element{attributes: attributes, children: children}, {main_graph, sub_graph}, options) do
+  def element_to_quoted(%Exx.Fragment{attributes: attributes, children: children}, {main_graph, sub_graph}, options) do
     quoted_attributes = Enum.reduce(attributes, [], &attribute_to_quoted(&1, &2, options)) |> Enum.reverse()
 
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
@@ -106,15 +105,13 @@ defmodule ScenicJsx.Transform do
 
   # This is for text or other element
   def element_to_quoted(other, {[], []}, _options) do
+    IO.puts(9)
     {other, []}
   end
 
   def element_to_quoted(other, {main_graph, sub_graph}, _options) do
+    IO.puts(10)
     {[other | List.wrap(main_graph)], sub_graph}
-  end
-
-  def map_sub_graph(graph, sub_graph_functions) do
-    Enum.reduce(sub_graph_functions, graph, fn sf, g -> Scenic.Primitives.group(g, sf, []) end)
   end
 
   def process_children([], "text") do

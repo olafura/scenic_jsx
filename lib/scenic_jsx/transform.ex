@@ -171,6 +171,7 @@ defmodule ScenicJsx.Transform do
 
   def element_to_quoted(elements, {main_graph, sub_graph}, options) when is_list(elements) do
     IO.puts(1)
+    IO.inspect([elements, main_graph, sub_graph])
     Enum.reduce(elements, {main_graph, sub_graph}, &element_to_quoted(&1, &2, options))
   end
 
@@ -192,9 +193,12 @@ defmodule ScenicJsx.Transform do
     element_to_quoted(fragment, {[start_graph()], []}, options)
   end
 
+  # {:element,
+  #  ["text", {:attribute, ["translate", {15, 60}]}, {:attribute, ["id", :event]}],
+  #  ["Event received"]}
+
   def element_to_quoted(%Exx.Fragment{attributes: attributes, children: children}, {main_graph, sub_graph}, options) when map_size(attributes) === 0 do
     IO.puts(6)
-    # IO.inspect(%{attributes: attributes, main_graph: main_graph, sub_graph: sub_graph})
     {quoted_children, quote_children_sub_graph} = element_to_quoted(children, {[], []}, options)
 
     new_graph = new_group(List.delete_at(quoted_children, -1))

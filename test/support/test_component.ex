@@ -11,8 +11,8 @@ defmodule TestComponent do
     graph =
       ~x(
         <text>#{text}</text>
-      )debug
-      #|> push_graph()
+      )
+      |> push_graph()
 
     {:ok, %{graph: graph, viewport: opts[:viewport]}}
   end

@@ -105,12 +105,10 @@ defmodule ScenicJsx.Transform do
 
   # This is for text or other element
   def element_to_quoted(other, {[], []}, _options) do
-    IO.puts(9)
     {other, []}
   end
 
   def element_to_quoted(other, {main_graph, sub_graph}, _options) do
-    IO.puts(10)
     {[other | List.wrap(main_graph)], sub_graph}
   end
 

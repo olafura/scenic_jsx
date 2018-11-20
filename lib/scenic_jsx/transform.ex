@@ -169,6 +169,176 @@ defmodule ScenicJsx.Transform do
   #   {[other | List.wrap(main_graph)], sub_graph}
   # end
 
+# 1
+# [
+#   [
+#     {:element, [],
+#      [
+#        {:element,
+#         [attribute: ["font_size", 20], attribute: ["translate", {0, 10}]],
+#         [
+#           {:element,
+#            [
+#              "text",
+#              {:attribute, ["translate", {15, 60}]},
+#              {:attribute, ["id", :event]}
+#            ], ["Event received"]},
+#           {:element,
+#            [
+#              "text",
+#              {:attribute, ["id", :temperature]},
+#              {:attribute, ["text_align", :center]},
+#              {:attribute, ["font_size", 160]}
+#            ], ["Testing"]}
+#         ]}
+#      ]}
+#   ],
+#   [],
+#   []
+# ]
+# 2
+# 1
+# [
+#   [
+#     {:element,
+#      [attribute: ["font_size", 20], attribute: ["translate", {0, 10}]],
+#      [
+#        {:element,
+#         [
+#           "text",
+#           {:attribute, ["translate", {15, 60}]},
+#           {:attribute, ["id", :event]}
+#         ], ["Event received"]},
+#        {:element,
+#         [
+#           "text",
+#           {:attribute, ["id", :temperature]},
+#           {:attribute, ["text_align", :center]},
+#           {:attribute, ["font_size", 160]}
+#         ], ["Testing"]}
+#      ]}
+#   ],
+#   [
+#     {{:., [], [{:__aliases__, [alias: false], [:Scenic, :Graph]}, :build]}, [],
+#      [[]]}
+#   ],
+#   []
+# ]
+# 5
+# 1
+# [
+#   [
+#     {:element,
+#      [
+#        "text",
+#        {:attribute, ["translate", {15, 60}]},
+#        {:attribute, ["id", :event]}
+#      ], ["Event received"]},
+#     {:element,
+#      [
+#        "text",
+#        {:attribute, ["id", :temperature]},
+#        {:attribute, ["text_align", :center]},
+#        {:attribute, ["font_size", 160]}
+#      ], ["Testing"]}
+#   ],
+#   [],
+#   []
+# ]
+# 4
+# 8
+# 1
+# [["Event received"], [], []]
+# 9
+# 8
+# 1
+# [["Testing"], [], []]
+# 9
+
+#   1
+# [
+#   [
+#     %Exx.Fragment{
+#       attributes: %{},
+#       children: [
+#         %Exx.Element{attributes: %{}, children: [], name: "text", type: :tag},
+#         %Exx.Fragment{
+#           attributes: %{},
+#           children: [
+#             %Exx.Element{
+#               attributes: %{
+#                 "font_size" => 160,
+#                 "id" => :temperature,
+#                 "text_align" => :center
+#               },
+#               children: ["Testing\n          "],
+#               name: "text",
+#               type: :tag
+#             }
+#           ]
+#         },
+#         %Exx.Element{attributes: %{}, children: [], name: "text", type: :tag}
+#       ]
+#     }
+#   ],
+#   [],
+#   []
+# ]
+# 2
+# 1
+# [
+#   [
+#     %Exx.Element{attributes: %{}, children: [], name: "text", type: :tag},
+#     %Exx.Fragment{
+#       attributes: %{},
+#       children: [
+#         %Exx.Element{
+#           attributes: %{
+#             "font_size" => 160,
+#             "id" => :temperature,
+#             "text_align" => :center
+#           },
+#           children: ["Testing\n          "],
+#           name: "text",
+#           type: :tag
+#         }
+#       ]
+#     },
+#     %Exx.Element{attributes: %{}, children: [], name: "text", type: :tag}
+#   ],
+#   [
+#     {{:., [], [{:__aliases__, [alias: false], [:Scenic, :Graph]}, :build]}, [],
+#      [[]]}
+#   ],
+#   []
+# ]
+# 5
+# 1
+# [[], [], []]
+# 6
+# 1
+# [
+#   [
+#     %Exx.Element{
+#       attributes: %{
+#         "font_size" => 160,
+#         "id" => :temperature,
+#         "text_align" => :center
+#       },
+#       children: ["Testing\n          "],
+#       name: "text",
+#       type: :tag
+#     }
+#   ],
+#   [],
+#   []
+# ]
+# 5
+# 1
+# [["Testing\n          "], [], []]
+# 9
+
+
   def element_to_quoted(elements, {main_graph, sub_graph}, options) when is_list(elements) do
     IO.puts(1)
     IO.inspect([elements, main_graph, sub_graph])
